@@ -46,21 +46,28 @@ To run this project, follow these steps:
    python manage.py migrate
 
 ###  Running the Project
-  To run the development server:
-    ```bash
-    python manage.py runserver
+
+To run the development server:
+   ```bash
+   python manage.py runserver
+```
 
 ### Endpoints
-**Test Signal Execution (Synchronous/Threading):**
+   * **Test Signal Execution (Synchronous/Threading):**
+   
+     Endpoint: /signals/signal-test/
+     This endpoint will trigger a signal when creating an Employee object and demonstrate whether signals run synchronously in the same thread.
+   
+   * **Test Database Transaction Behavior in Signals:**
+   
+     Endpoint: /signals/transaction-test/
+     This endpoint will show if signals run within the same database transaction.
+   
+   * **Test Custom Rectangle Class:**
+   
+     Endpoint: /signals/rectangle-test/
+     This endpoint tests the custom Rectangle class to show how it behaves as an iterable.
 
-  Endpoint: /signals/signal-test/
-  This endpoint will trigger a signal when creating an Employee object and demonstrate whether signals run synchronously in the same thread.
-**Test Database Transaction Behavior in Signals:**
 
-  Endpoint: /signals/transaction-test/
-  This endpoint will show if signals run within the same database transaction.
-**Test Custom Rectangle Class:**
 
-  Endpoint: /signals/rectangle-test/
-  This endpoint tests the custom Rectangle class to show how it behaves as an iterable.
 

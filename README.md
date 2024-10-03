@@ -23,7 +23,7 @@ To run this project, follow these steps:
 1. Clone this repository:
 
    ```bash
-   git clone [https://github.com/Cyphersk21/django-signals-project.git](https://github.com/Cyphersk21/django-signals-and-custom-class.git)
+   git clone https://github.com/Cyphersk21/django-signals-project.git
 2. Navigate to the project directory:
    ```bash
    cd django-signals-project

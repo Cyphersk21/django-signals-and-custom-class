@@ -1,73 +1,109 @@
-# Django Signals Project
+# Django Signals and Custom Classes
 
-This project demonstrates the usage of Django signals and answers common questions about their behavior, such as:
+## Topic: Django Signals
 
-1. **Are Django signals executed synchronously or asynchronously by default?**
-2. **Do Django signals run in the same thread as the caller?**
-3. **Do Django signals run in the same database transaction as the caller?**
+### Question 1: Are Django signals executed synchronously or asynchronously by default?
+**Answer:**
+* By default, Django signals are executed **synchronously**. This means that the signal handler (receiver) is executed in the same flow as the calling function, and the program will wait for the signal to finish execution before proceeding.
 
-Additionally, this project includes a custom Python class that demonstrates the use of a `Rectangle` class that behaves like an iterable.
+**Proof with Code:**
+```python
+import time
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
 
-## Project Setup
+@receiver(post_save, sender=User)
+def user_saved(sender, instance, **kwargs):
+    print("Signal started")
+    time.sleep(5)  # Simulate a delay
+    print("Signal completed")
+```
+**Explanation:**
 
-To run this project, follow these steps:
+* When a new User object is saved, the post_save signal triggers the user_saved function. The time.sleep(5) introduces a delay of 5 seconds.
+When you save the user in your view, the program will halt for 5 seconds before continuing, proving that the signal is executed synchronously.
 
-### Prerequisites
 
-- Python 3.x
-- Django 4.x
-- Git
+### Question 2: Do Django signals run in the same thread as the caller?
+**Answer:**
+* Yes, by default, Django signals run in the same thread as the caller. Both the caller and the signal handler execute in the same thread unless explicitly handled otherwise (e.g., using asynchronous tasks).
 
-### Installation
+**Proof with Code:**
 
-1. Clone this repository:
+```python
+#signals.py
+import threading
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
 
-   ```bash
-   git clone https://github.com/Cyphersk21/django-signals-project.git
-2. Navigate to the project directory:
-   ```bash
-   cd django-signals-project
-3. Create a virtual environment:
-   ```bash
-   python -m venv venv
-4. Activate the virtual environment:
-   
-   * For Windows:
-     ```bash
-     venv\Scripts\activate
-   * For macOS/Linux:
-     ```bash
-     source venv/bin/activate
-5. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-6. Apply migrations to create the database schema:
-   ```bash
-   python manage.py migrate
+@receiver(post_save, sender=User)
+def user_saved(sender, instance, **kwargs):
+    print(f"Signal running in thread: {threading.current_thread().name}")
 
-###  Running the Project
+# views.py
+import threading
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 
-To run the development server:
-   ```bash
-   python manage.py runserver
+def create_user_view(request):
+    print(f"View running in thread: {threading.current_thread().name}")
+    user = User.objects.create(username="test_user")
+    return HttpResponse("User created!")
+```
+Explanation:
+
+* Both the view function and the signal handler print the current thread's name. If both print the same thread name, it proves that they run in the same thread.
+
+
+### Question 3: Do Django signals run in the same database transaction as the caller?
+**Answer**
+* Yes, Django signals run in the same transaction as the caller by default. If a signal is triggered during a transaction, it will be part of that transaction. If the transaction rolls back, the signal's changes will also be rolled back.
+
+***Proof with Code:**
+
+```python
+
+# signals.py
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+from django.db import transaction
+
+@receiver(post_save, sender=User)
+def user_saved(sender, instance, **kwargs):
+    if kwargs.get('created', False):
+        print(f"Signal executed inside the transaction: {transaction.get_autocommit()}")
 ```
 
-### Endpoints
-   * **Test Signal Execution (Synchronous/Threading):**
-   
-     Endpoint: /signals/signal-test/
-     This endpoint will trigger a signal when creating an Employee object and demonstrate whether signals run synchronously in the same thread.
-   
-   * **Test Database Transaction Behavior in Signals:**
-   
-     Endpoint: /signals/transaction-test/
-     This endpoint will show if signals run within the same database transaction.
-   
-   * **Test Custom Rectangle Class:**
-   
-     Endpoint: /signals/rectangle-test/
-     This endpoint tests the custom Rectangle class to show how it behaves as an iterable.
+**Explanation:**
 
+* The signal handler checks if it is being executed inside a transaction by calling transaction.get_autocommit(). If it returns False, the signal is running inside the same transaction.
 
+## Topic: Custom Classes in Python
+### Task: Creating a Rectangle Class
+* You need to create a Rectangle class that allows iteration over its length and width in a specific format.
 
+```python
+
+class Rectangle:
+    def __init__(self, length: int, width: int):
+        self.length = length
+        self.width = width
+
+    def __iter__(self):
+        yield {'length': self.length}
+        yield {'width': self.width}
+
+# Testing the Rectangle class
+rect = Rectangle(10, 5)
+for dimension in rect:
+    print(dimension)
+```
+
+**Explanation:**
+
+* The Rectangle class defines an __init__ method to initialize the length and width.
+The __iter__ method allows iteration over the instance, first yielding the length and then the width.
 
